@@ -1,5 +1,7 @@
 package org.example.birthdaybot.service;
 
+import com.pengrad.telegrambot.TelegramBot;
+import com.pengrad.telegrambot.request.SendMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.example.birthdaybot.model.PersonData;
@@ -19,6 +21,7 @@ public class SaveService {
     static String regex = "^(0?[1-9]|[12][0-9]|3[01])\\.(0?[1-9]|1[012])\\.(0?[1-2][0-9][0-9][0-9])\\s+([A-Za-zА-Яа-я]{3,}\\s+[A-Za-zА-Яа-я]{3,})$";
     private final static Pattern PATTERN = Pattern.compile(regex);
     private final DataRepository repository;
+    private final TelegramBot telegramBot;
 
 
     public boolean addBirthday(String incomingMessage, Long chatId) {
@@ -37,13 +40,16 @@ public class SaveService {
                 SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
                 Date date = dateFormat.parse(birthdayStr);
                 PersonData data = new PersonData(chatId, name, date);
-                repository.save(data);
-                return true;
+                if (!repository.existsByChatId(chatId)) {
+                    repository.save(data);
+                    return true;
+                }
             } catch (ParseException e) {
                 log.error("Ошибка при парсинге даты: {}", birthdayStr, e);
             }
         }
         log.info("Парсинг не удался");
+        telegramBot.execute(new SendMessage(chatId, "Твои данные уже у нас, глупышка :-)"));
         return false;
     }
 }

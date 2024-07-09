@@ -22,9 +22,9 @@ public class Reminder {
     private DataRepository dataRepository;
     private TelegramBot telegramBot;
 
-    //    @Scheduled(cron = "0 0 19 * * ?")
+    @Scheduled(cron = "0 0 19 * * ?")
 
-    @Scheduled(cron = "0/10 * * * * *")
+    //@Scheduled(cron = "0/10 * * * * *")
     public void doReminder() {
         log.info("В планировщике");
         LocalDate tomorrow = LocalDate.now().plusDays(1);
