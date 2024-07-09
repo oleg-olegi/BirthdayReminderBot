@@ -48,10 +48,10 @@ public class BotUpdateListener implements UpdatesListener {
             }
 
             if (service.addBirthday(message.text(), chatId)) {
-                String success = "Добавлено успешно";
+                String success = "\uD83D\uDE3B Напоминание добавлено успешно \uD83D\uDE3B";
                 telegramBot.execute(new SendMessage(chatId, success));
             } else {
-                String unsuccessfullyMessage = "Возможно есть ошибки в формате сообщения";
+                String unsuccessfullyMessage = "Возможно, есть ошибки в формате сообщения \uD83E\uDD21";
                 telegramBot.execute(new SendMessage(chatId, unsuccessfullyMessage));
             }
         });

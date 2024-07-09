@@ -34,14 +34,19 @@ public class Reminder {
             LocalDate birthday = convertToLocalDate(data.getBirthday());
             birthday = birthday.withYear(LocalDate.now().getYear());
             if (birthday.equals(tomorrow)) {
-                String remindMsg = "Завтра день рождения у " + data.getFullName() + " - не забудь поздравить";
-                personData.forEach(chatId -> telegramBot.execute(new SendMessage(chatId.getChatId(), remindMsg)));
+                sendMessagesToAllChats(personData, data);
+//                String remindMsg = "Завтра день рождения у " + data.getFullName() + "\uD83D\uDCA5 - не забудь поздравить";
+//                personData.forEach(chatId -> telegramBot.execute(new SendMessage(chatId.getChatId(), remindMsg)));
             }
         });
     }
 
+    private void sendMessagesToAllChats(List<PersonData> personData, PersonData data) {
+        String remindMsg = "Завтра день рождения у " + data.getFullName() + "\uD83D\uDCA5 - не забудь поздравить";
+        personData.forEach(chatId -> telegramBot.execute(new SendMessage(chatId.getChatId(), remindMsg)));
+    }
 
-    private static LocalDate convertToLocalDate(Date dateToConvert) {
+    private LocalDate convertToLocalDate(Date dateToConvert) {
         log.info("В конвертере даты: {}", dateToConvert.toString());
 
         return dateToConvert.toInstant()
