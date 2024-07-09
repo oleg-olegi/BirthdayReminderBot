@@ -34,9 +34,8 @@ public class Reminder {
             LocalDate birthday = convertToLocalDate(data.getBirthday());
             birthday = birthday.withYear(LocalDate.now().getYear());
             if (birthday.equals(tomorrow)) {
-                sendMessagesToAllChats(personData, data);
-//                String remindMsg = "Завтра день рождения у " + data.getFullName() + "\uD83D\uDCA5 - не забудь поздравить";
-//                personData.forEach(chatId -> telegramBot.execute(new SendMessage(chatId.getChatId(), remindMsg)));
+                String remindMsg = "Завтра день рождения у " + data.getFullName() + "\uD83D\uDCA5 - не забудь поздравить";
+                personData.forEach(chatId -> telegramBot.execute(new SendMessage(chatId.getChatId(), remindMsg)));
             }
         });
     }

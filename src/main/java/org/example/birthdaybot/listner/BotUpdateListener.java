@@ -35,24 +35,32 @@ public class BotUpdateListener implements UpdatesListener {
             log.info("Processing update: {}", update);
             // Process your updates here
             Message message = update.message();
-            if (message == null) {
-                log.info("Message is null");
-                return;
-            }
-            Long chatId = message.chat().id();
-            if ("/start".equals(message.text())) {
-                String welcome = "Привет, " + message.chat().username() + ", введи дату " +
-                        "рождения и имя в формате:\nДД.ММ.ГГГГ ИМЯ ФАМИЛИЯ";
-                telegramBot.execute(new SendMessage(chatId, welcome));
-                return;
-            }
+            if (message != null && message.text() != null) {
+//                log.info("Message is null");
+//                return;
+                Long chatId = message.chat().id();
+                String text = message.text();
 
-            if (service.addBirthday(message.text(), chatId)) {
-                String success = "\uD83D\uDE3B Напоминание добавлено успешно \uD83D\uDE3B";
-                telegramBot.execute(new SendMessage(chatId, success));
+                log.info("Processing message: {}", text);
+
+
+                if ("/start".equals(message.text())) {
+                    String welcome = "Привет, " + message.chat().username() + ", введи дату " +
+                            "рождения и имя в формате:\nДД.ММ.ГГГГ ИМЯ ФАМИЛИЯ";
+                    telegramBot.execute(new SendMessage(chatId, welcome));
+                    return;
+                }
+
+                if (service.addBirthday(message.text(), chatId)) {
+                    String success = "\uD83D\uDE3B Напоминание добавлено успешно \uD83D\uDE3B";
+                    telegramBot.execute(new SendMessage(chatId, success));
+                } else {
+                    String unsuccessfullyMessage = "Возможно, есть ошибки в формате сообщения \uD83E\uDD21" +
+                            ". Формат сообщения - 29.02.1452 Феофан Благой";
+                    telegramBot.execute(new SendMessage(chatId, unsuccessfullyMessage));
+                }
             } else {
-                String unsuccessfullyMessage = "Возможно, есть ошибки в формате сообщения \uD83E\uDD21";
-                telegramBot.execute(new SendMessage(chatId, unsuccessfullyMessage));
+                log.info("Message is null: {}", message);
             }
         });
         return UpdatesListener.CONFIRMED_UPDATES_ALL;

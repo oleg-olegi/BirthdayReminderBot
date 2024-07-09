@@ -22,10 +22,14 @@ public class SaveService {
 
 
     public boolean addBirthday(String incomingMessage, Long chatId) {
+        if (incomingMessage == null) {
+            throw new IllegalArgumentException("dateOfBirth cannot be null");
+        }
+
         Matcher matcher = PATTERN.matcher(incomingMessage);
         log.info("Incoming message: {}", incomingMessage);
         if (matcher.find()) {
-            String birthdayStr = matcher.group(1)+"."+matcher.group(2)+"."+matcher.group(3);
+            String birthdayStr = matcher.group(1) + "." + matcher.group(2) + "." + matcher.group(3);
             log.info("Дата рождения: {}", birthdayStr);
             String name = matcher.group(4);
             log.info("Имя Фамилия: {}", name);
