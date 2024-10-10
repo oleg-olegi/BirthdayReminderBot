@@ -25,7 +25,6 @@ public class SaveService {
     private final DataRepository repository;
     private final TelegramBot telegramBot;
 
-
     public boolean addBirthday(String incomingMessage, Long chatId) {
         if (incomingMessage == null) {
             throw new IllegalArgumentException("Message cannot be null");
@@ -51,7 +50,6 @@ public class SaveService {
                 }
             }
         } catch (ParseException e) {
-
             log.error("Ошибка при парсинге даты", e);
         } catch (DataIsAlreadyExistsException e) {
             telegramBot.execute(new SendMessage(chatId, e.getMessage()));

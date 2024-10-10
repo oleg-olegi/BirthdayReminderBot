@@ -43,7 +43,6 @@ public class BotUpdateListener implements UpdatesListener {
 
                 log.info("Processing message: {}", text);
 
-
                 if ("/start".equals(message.text())) {
                     String welcome = "Привет, " + message.chat().username() + ", введи дату " +
                             "рождения и имя в формате:\nДД.ММ.ГГГГ ИМЯ ФАМИЛИЯ";
