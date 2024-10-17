@@ -33,7 +33,8 @@ public class Reminder {
             birthday = birthday.withYear(LocalDate.now().getYear());
             if (birthday.equals(tomorrow)) {
                 String remindMsg = "Завтра день рождения у " + data.getFullName() + "\uD83D\uDCA5 - не забудь поздравить";
-                personData.forEach(chatId -> telegramBot.execute(new SendMessage(chatId.getChatId(), remindMsg)));
+                personData.forEach(
+                        chatId -> telegramBot.execute(new SendMessage(chatId.getChatId(), remindMsg)));
             }
         });
     }

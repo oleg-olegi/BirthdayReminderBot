@@ -6,11 +6,15 @@ import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import com.pengrad.telegrambot.request.SendMessage;
 import jakarta.annotation.PostConstruct;
+import lombok.Data;
 import lombok.extern.log4j.Log4j2;
+import org.example.birthdaybot.repository.DataRepository;
 import org.example.birthdaybot.service.SaveService;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Log4j2
@@ -18,10 +22,14 @@ public class BotUpdateListener implements UpdatesListener {
 
     private final TelegramBot telegramBot;
     private final SaveService service;
+    private final DataRepository dataRepository;
 
-    public BotUpdateListener(TelegramBot telegramBot, SaveService service) {
+    private final Map<Long, Boolean> statusSaver = new HashMap<>(); //Храним состояние чата
+
+    public BotUpdateListener(TelegramBot telegramBot, SaveService service, DataRepository dataRepository) {
         this.telegramBot = telegramBot;
         this.service = service;
+        this.dataRepository = dataRepository;
     }
 
     @PostConstruct
@@ -36,32 +44,32 @@ public class BotUpdateListener implements UpdatesListener {
             // Process your updates here
             Message message = update.message();
             if (message != null && message.text() != null) {
-//                log.info("Message is null");
-//                return;
                 Long chatId = message.chat().id();
                 String text = message.text();
-
                 log.info("Processing message: {}", text);
 
-
-                if ("/start".equals(message.text())) {
-                    String welcome = "Привет, " + message.chat().username() + ", введи дату " +
-                            "рождения и имя в формате:\nДД.ММ.ГГГГ ИМЯ ФАМИЛИЯ";
-                    telegramBot.execute(new SendMessage(chatId, welcome));
+                if (message.text().contains("/start")) {
+                    handleStartMessage(message, chatId);
                     return;
                 }
                 if (service.addBirthday(message.text(), chatId)) {
-                    String success = "\uD83D\uDE3B Напоминание добавлено успешно \uD83D\uDE3B";
-                    telegramBot.execute(new SendMessage(chatId, success));
-                } else {
-                    String unsuccessfullyMessage = "Возможно, есть ошибки в формате сообщения \uD83E\uDD21" +
-                            ". Формат сообщения - 29.02.1452 Имя Фамилия";
-                    telegramBot.execute(new SendMessage(chatId, unsuccessfullyMessage));
+                    processSuccessAddition(chatId);
                 }
             } else {
                 log.info("Message is null: {}", message);
             }
         });
         return UpdatesListener.CONFIRMED_UPDATES_ALL;
+    }
+
+    private void processSuccessAddition(Long chatId) {
+        String success = "\uD83D\uDE3B Напоминание добавлено успешно \uD83D\uDE3B";
+        telegramBot.execute(new SendMessage(chatId, success));
+    }
+
+    private void handleStartMessage(Message message, Long chatId) {
+        String welcome = "Привет, " + message.chat().username() + ", введи дату " +
+                "рождения и имя в формате:\nДД.ММ.ГГГГ ИМЯ ФАМИЛИЯ";
+        telegramBot.execute(new SendMessage(chatId, welcome));
     }
 }

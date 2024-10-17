@@ -5,6 +5,7 @@ import com.pengrad.telegrambot.request.SendMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.example.birthdaybot.exceptions.DataIsAlreadyExistsException;
+import org.example.birthdaybot.exceptions.IncorrectMessageFormat;
 import org.example.birthdaybot.model.PersonData;
 import org.example.birthdaybot.repository.DataRepository;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,6 @@ public class SaveService {
     private final DataRepository repository;
     private final TelegramBot telegramBot;
 
-
     public boolean addBirthday(String incomingMessage, Long chatId) {
         if (incomingMessage == null) {
             throw new IllegalArgumentException("Message cannot be null");
@@ -33,31 +33,44 @@ public class SaveService {
         try {
             Matcher matcher = PATTERN.matcher(incomingMessage);
             log.info("Incoming message: {}", incomingMessage);
-            if (matcher.find()) {
-                String birthdayStr = matcher.group(1) + "." + matcher.group(2) + "." + matcher.group(3);
-                log.info("Дата рождения: {}", birthdayStr);
-                String name = matcher.group(4);
-                log.info("Имя Фамилия: {}", name);
-
-                SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
-                Date date = dateFormat.parse(birthdayStr);
-                PersonData data = new PersonData(chatId, name, date);
-                if (!repository.existsByChatId(chatId)) {
-                    repository.save(data);
-                    notificationForAllParticipants(data);//рассылка всем когда кто-то добавился
-                    return true;
-                } else {
-                    throw new DataIsAlreadyExistsException("Твои данные уже у нас, глупышка :-)))");
-                }
+            if (matcher.matches() && !repository.existsByChatId(chatId)) {
+                log.info("В блоке 1");
+                PersonData data = parsingStringToPerson(matcher, chatId);
+                return savePersonData(data);
+            } else if (!matcher.matches() && !repository.existsByChatId(chatId)) {
+                log.info("В блоке 2");
+                throw new IncorrectMessageFormat("Возможно, есть ошибки в формате сообщения \uD83E\uDD21" +
+                        ". Формат сообщения - 29.02.1452 Имя Фамилия");
             }
-        } catch (ParseException e) {
-
-            log.error("Ошибка при парсинге даты", e);
+            if (matcher.matches() && repository.existsByChatId(chatId)) {
+                log.info("В блоке 3");
+                throw new DataIsAlreadyExistsException("Твои данные уже у нас, глупышка :-)))");
+            }
         } catch (DataIsAlreadyExistsException e) {
             telegramBot.execute(new SendMessage(chatId, e.getMessage()));
+        } catch (IncorrectMessageFormat e) {
+            log.error("Ошибка в формате введенного сообщения");
+            telegramBot.execute(new SendMessage(chatId, e.getMessage()));
+        } catch (ParseException e) {
+            log.error("Ошибка при парсинге даты");
         }
-        log.info("Парсинг не удался");
         return false;
+    }
+
+    private PersonData parsingStringToPerson(Matcher matcher, Long chatId) throws ParseException {
+        String birthdayStr = matcher.group(1) + "." + matcher.group(2) + "." + matcher.group(3);
+        log.info("Дата рождения: {}", birthdayStr);
+        String name = matcher.group(4);
+        log.info("Имя Фамилия: {}", name);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy");
+        Date date = dateFormat.parse(birthdayStr);
+        return new PersonData(chatId, name, date);
+    }
+
+    private boolean savePersonData(PersonData data) {
+        repository.save(data);
+        notificationForAllParticipants(data);//рассылка всем когда кто-то добавился
+        return true;
     }
 
     private void notificationForAllParticipants(PersonData newPersonData) {
