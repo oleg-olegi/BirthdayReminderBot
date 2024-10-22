@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: my-postgres-db
+    environment:
+      POSTGRES_DB: birthdaydb-doc
+      POSTGRES_USER: Oleg
+      POSTGRES_PASSWORD: 123
+    ports:
+      - "15432:5432"
+
+  app:
+    image: olegshinkevich/reminder-for-tg:latest # Замените на имя вашего образа
+    container_name: java-app
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://my-postgres-db:5432/birthdaydb-doc
+      SPRING_DATASOURCE_USERNAME: Oleg
+      SPRING_DATASOURCE_PASSWORD: 123
+#    depends_on:
+#      - db
+    ports:
+      - "8037:8037"
+volumes:
+  db_data:

@@ -47,7 +47,6 @@ public class BotUpdateListener implements UpdatesListener {
                 Long chatId = message.chat().id();
                 String text = message.text();
                 log.info("Processing message: {}", text);
-
                 if (message.text().contains("/start")) {
                     handleStartMessage(message, chatId);
                     return;

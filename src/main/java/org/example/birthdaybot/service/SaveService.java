@@ -44,7 +44,7 @@ public class SaveService {
             }
             if (matcher.matches() && repository.existsByChatId(chatId)) {
                 log.info("В блоке 3");
-                throw new DataIsAlreadyExistsException("Твои данные уже у нас, глупышка :-)))");
+                throw new DataIsAlreadyExistsException("Твои данные уже у нас, глупышка. With LOVE, твой Товарищ Майор");
             }
         } catch (DataIsAlreadyExistsException e) {
             telegramBot.execute(new SendMessage(chatId, e.getMessage()));
